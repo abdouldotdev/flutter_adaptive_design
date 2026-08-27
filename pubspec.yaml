@@ -1,0 +1,29 @@
+name: flutter_adaptive_design
+description: "Platform-adaptive Flutter design system automatically dispatching native iOS (Cupertino HIG) and Android (Material 3) UI from a single codebase."
+version: 1.0.0
+homepage: https://github.com/abdouldotdev/flutter_adaptive_design
+repository: https://github.com/abdouldotdev/flutter_adaptive_design
+issue_tracker: https://github.com/abdouldotdev/flutter_adaptive_design/issues
+
+topics:
+  - adaptive
+  - cupertino
+  - material3
+  - design-system
+  - responsive
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
+  hugeicons: ^1.1.7
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+
+flutter:
