@@ -1,4 +1,4 @@
-/// Convenience barrel forwarding all exports from flutter_adaptive_design.
+/// Short-name export library for flutter_adaptive_design.
 library;
 
 export 'flutter_adaptive_design.dart';

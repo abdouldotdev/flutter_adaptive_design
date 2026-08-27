@@ -5,6 +5,7 @@
 library;
 
 // Foundation
+export 'src/foundation/adaptive_app.dart';
 export 'src/foundation/adaptive_icons.dart';
 export 'src/foundation/adaptive_theme_scope.dart';
 export 'src/foundation/adaptive_tokens.dart';
@@ -18,6 +19,7 @@ export 'src/widgets/layout/adaptive_app_bar.dart';
 export 'src/widgets/layout/adaptive_bottom_nav.dart';
 export 'src/widgets/layout/adaptive_card.dart';
 export 'src/widgets/layout/adaptive_divider.dart';
+export 'src/widgets/layout/adaptive_liquid_glass.dart';
 export 'src/widgets/layout/adaptive_list_section.dart';
 export 'src/widgets/layout/adaptive_list_tile.dart';
 export 'src/widgets/layout/adaptive_scaffold.dart';

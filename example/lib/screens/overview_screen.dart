@@ -7,6 +7,7 @@ import 'chips_screen.dart';
 import 'feedback_screen.dart';
 import 'inputs_screen.dart';
 import 'layout_screen.dart';
+import 'liquid_glass_screen.dart';
 import 'navigation_screen.dart';
 import 'pickers_screen.dart';
 import 'responsive_screen.dart';
@@ -57,6 +58,12 @@ class OverviewScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AdaptiveSpacing.md),
+          _CatalogTile(
+            title: 'Liquid Glass & Frosted UI',
+            subtitle: 'AdaptiveLiquidGlass, FrostedCard, LiquidNavBar, Spring Haptics',
+            icon: AdaptiveIcons.sparkles,
+            onTap: () => AdaptivePageRoute.push(context, builder: (_) => const LiquidGlassScreen()),
+          ),
           _CatalogTile(
             title: 'Buttons & Actions',
             subtitle: 'AdaptiveButton, Fab, IconButton, TextButton, LoadingButton',

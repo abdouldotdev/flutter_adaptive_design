@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../foundation/platform_utils.dart';
 
@@ -42,11 +43,21 @@ class AdaptiveButton extends StatelessWidget {
     );
   }
 
+  VoidCallback? _wrapHaptics(VoidCallback? callback) {
+    if (callback == null) return null;
+    return () {
+      HapticFeedback.lightImpact();
+      callback();
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
+    final effectiveOnPressed = _wrapHaptics(onPressed);
+
     if (PlatformUtils.isCupertino) {
       return CupertinoButton.filled(
-        onPressed: onPressed,
+        onPressed: effectiveOnPressed,
         padding: padding,
         borderRadius:
             borderRadius ?? const BorderRadius.all(Radius.circular(16)),
@@ -55,7 +66,7 @@ class AdaptiveButton extends StatelessWidget {
     }
 
     return FilledButton(
-      onPressed: onPressed,
+      onPressed: effectiveOnPressed,
       style: FilledButton.styleFrom(
         padding: padding,
         backgroundColor: color,

@@ -61,6 +61,7 @@ abstract final class AdaptiveIcons {
   static const AdaptiveIconData analytics = HugeIcons.strokeRoundedAnalytics01;
   static const AdaptiveIconData calendar = HugeIcons.strokeRoundedCalendar01;
   static const AdaptiveIconData clock = HugeIcons.strokeRoundedClock01;
+  static const AdaptiveIconData sparkles = HugeIcons.strokeRoundedSparkles;
 
   /// Branches between two glyphs by platform.
   static T resolve<T>({
