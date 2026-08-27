@@ -5,6 +5,7 @@ import '../../foundation/adaptive_icons.dart';
 import '../../foundation/adaptive_tokens.dart';
 import '../../foundation/platform_utils.dart';
 import '../buttons/adaptive_text_button.dart';
+import '../layout/adaptive_liquid_glass.dart';
 
 /// Blocking error state: what a screen shows instead of its content when the
 /// content could not be loaded.
@@ -30,6 +31,12 @@ class AdaptiveErrorState extends StatelessWidget {
   /// Padding around the whole block.
   final EdgeInsetsGeometry? padding;
 
+  /// Whether to wrap the error state inside a frosted glass card.
+  final bool useLiquidGlass;
+
+  /// Corner radius when using frosted glass card.
+  final BorderRadius? cardBorderRadius;
+
   const AdaptiveErrorState({
     super.key,
     required this.message,
@@ -39,45 +46,58 @@ class AdaptiveErrorState extends StatelessWidget {
     this.icon = AdaptiveIcons.error,
     this.iconSize = 48,
     this.padding,
+    this.useLiquidGlass = false,
+    this.cardBorderRadius,
   });
 
   @override
   Widget build(BuildContext context) {
+    final Widget stateContent = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        AdaptiveIcon(
+          icon,
+          size: iconSize,
+          color: AdaptiveColors.destructive(context),
+        ),
+        const SizedBox(height: AdaptiveSpacing.lg),
+        if (title != null) ...<Widget>[
+          Text(
+            title!,
+            textAlign: TextAlign.center,
+            style: _titleStyle(context),
+          ),
+          const SizedBox(height: AdaptiveSpacing.sm),
+        ],
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: _messageStyle(context),
+        ),
+        if (onRetry != null) ...<Widget>[
+          const SizedBox(height: AdaptiveSpacing.lg),
+          AdaptiveTextButton(
+            onPressed: onRetry,
+            color: AdaptiveColors.primary(context),
+            child: Text(retryLabel),
+          ),
+        ],
+      ],
+    );
+
+    final Widget child = useLiquidGlass
+        ? AdaptiveLiquidGlass(
+            borderRadius:
+                cardBorderRadius ?? BorderRadius.circular(AdaptiveRadius.card),
+            padding: const EdgeInsets.all(AdaptiveSpacing.xl),
+            child: stateContent,
+          )
+        : stateContent;
+
     return Center(
       child: SingleChildScrollView(
         padding: padding ?? const EdgeInsets.all(AdaptiveSpacing.xxl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            AdaptiveIcon(
-              icon,
-              size: iconSize,
-              color: AdaptiveColors.destructive(context),
-            ),
-            const SizedBox(height: AdaptiveSpacing.lg),
-            if (title != null) ...<Widget>[
-              Text(
-                title!,
-                textAlign: TextAlign.center,
-                style: _titleStyle(context),
-              ),
-              const SizedBox(height: AdaptiveSpacing.sm),
-            ],
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: _messageStyle(context),
-            ),
-            if (onRetry != null) ...<Widget>[
-              const SizedBox(height: AdaptiveSpacing.lg),
-              AdaptiveTextButton(
-                onPressed: onRetry,
-                color: AdaptiveColors.primary(context),
-                child: Text(retryLabel),
-              ),
-            ],
-          ],
-        ),
+        child: child,
       ),
     );
   }

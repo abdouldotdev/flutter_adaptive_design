@@ -118,15 +118,20 @@ void main() {
   group('AdaptiveSegmentedControl', () {
     testAdaptiveWidget('renders SegmentedButton on Android and CupertinoSlidingSegmentedControl on iOS',
         (tester, platform) async {
+      int selectedVal = 1;
       await tester.pumpWidget(
         wrapAdaptiveTestWidget(
-          AdaptiveSegmentedControl<int>(
-            selected: 1,
-            onSelectionChanged: (v) {},
-            segments: const [
-              AdaptiveSegment(value: 1, label: Text('First')),
-              AdaptiveSegment(value: 2, label: Text('Second')),
-            ],
+          StatefulBuilder(
+            builder: (context, setState) {
+              return AdaptiveSegmentedControl<int>(
+                selected: selectedVal,
+                onSelectionChanged: (v) => setState(() => selectedVal = v),
+                segments: const [
+                  AdaptiveSegment(value: 1, label: Text('First')),
+                  AdaptiveSegment(value: 2, label: Text('Second')),
+                ],
+              );
+            },
           ),
         ),
       );
@@ -136,6 +141,32 @@ void main() {
       } else {
         expect(find.byType(SegmentedButton<int>), findsOneWidget);
       }
+
+      await tester.tap(find.text('Second'));
+      await tester.pumpAndSettle();
+      expect(selectedVal, 2);
+    });
+
+    testAdaptiveWidget('renders with Liquid Glass background when useLiquidGlass is true',
+        (tester, platform) async {
+      int selectedVal = 1;
+      await tester.pumpWidget(
+        wrapAdaptiveTestWidget(
+          AdaptiveSegmentedControl<int>(
+            selected: selectedVal,
+            useLiquidGlass: true,
+            onSelectionChanged: (v) => selectedVal = v,
+            segments: const [
+              AdaptiveSegment(value: 1, label: Text('Tab A')),
+              AdaptiveSegment(value: 2, label: Text('Tab B')),
+            ],
+          ),
+        ),
+      );
+
+      expect(find.byType(AdaptiveLiquidGlass), findsOneWidget);
+      expect(find.text('Tab A'), findsOneWidget);
+      expect(find.text('Tab B'), findsOneWidget);
     });
   });
 }

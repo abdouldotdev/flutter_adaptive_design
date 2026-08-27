@@ -5,6 +5,8 @@ import '../../foundation/adaptive_icons.dart';
 import '../../foundation/adaptive_tokens.dart';
 import '../../foundation/platform_utils.dart';
 
+import '../layout/adaptive_liquid_glass.dart';
+
 /// Non-blocking error, shown as a strip above the content that stays on
 /// screen.
 class AdaptiveErrorBanner extends StatelessWidget {
@@ -26,6 +28,15 @@ class AdaptiveErrorBanner extends StatelessWidget {
   /// The glyph shown before the message.
   final dynamic icon;
 
+  /// Whether to render with modern Liquid Glass (frosted blur) styling.
+  final bool useLiquidGlass;
+
+  /// Optional tap callback for the entire banner.
+  final VoidCallback? onTap;
+
+  /// Corner radius when [useLiquidGlass] is true.
+  final BorderRadius? borderRadius;
+
   const AdaptiveErrorBanner({
     super.key,
     required this.message,
@@ -34,6 +45,9 @@ class AdaptiveErrorBanner extends StatelessWidget {
     this.onRetry,
     this.retryLabel = 'Retry',
     this.icon = AdaptiveIcons.error,
+    this.useLiquidGlass = false,
+    this.onTap,
+    this.borderRadius,
   });
 
   @override
@@ -47,7 +61,26 @@ class AdaptiveErrorBanner extends StatelessWidget {
   Widget _buildCupertino(BuildContext context) {
     final Color accent = AdaptiveColors.destructive(context);
 
-    return DecoratedBox(
+    if (useLiquidGlass) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: AdaptiveLiquidGlass(
+          variant: LiquidGlassVariant.ultraThin,
+          borderRadius: borderRadius ?? BorderRadius.circular(12),
+          tintColor: accent.withValues(alpha: 0.15),
+          borderColor: accent.withValues(alpha: 0.3),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AdaptiveSpacing.page,
+            vertical: AdaptiveSpacing.sm,
+          ),
+          onTap: onTap,
+          enableSpringFeedback: onTap != null,
+          child: _buildBannerRow(context, accent),
+        ),
+      );
+    }
+
+    Widget banner = DecoratedBox(
       decoration: BoxDecoration(
         color: accent.withValues(alpha: 0.12),
         border: Border(
@@ -59,45 +92,58 @@ class AdaptiveErrorBanner extends StatelessWidget {
           horizontal: AdaptiveSpacing.page,
           vertical: AdaptiveSpacing.sm,
         ),
-        child: Row(
-          children: <Widget>[
-            AdaptiveIcon(icon, size: 18, color: accent),
-            const SizedBox(width: AdaptiveSpacing.sm),
-            Expanded(
-              child: Text(
-                message,
-                style: CupertinoTheme.of(context)
-                    .textTheme
-                    .textStyle
-                    .copyWith(color: AdaptiveColors.label(context)),
-              ),
-            ),
-            if (onRetry != null)
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: onRetry,
-                child: Text(
-                  retryLabel,
-                  style: CupertinoTheme.of(context)
-                      .textTheme
-                      .actionTextStyle
-                      .copyWith(color: AdaptiveColors.primary(context)),
-                ),
-              ),
-            if (onDismiss != null)
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: onDismiss,
-                child: AdaptiveIcon(
-                  AdaptiveIcons.close,
-                  size: 18,
-                  color: AdaptiveColors.secondaryLabel(context),
-                  semanticLabel: dismissLabel,
-                ),
-              ),
-          ],
-        ),
+        child: _buildBannerRow(context, accent),
       ),
+    );
+
+    if (onTap != null) {
+      banner = GestureDetector(
+        onTap: onTap,
+        child: banner,
+      );
+    }
+
+    return banner;
+  }
+
+  Widget _buildBannerRow(BuildContext context, Color accent) {
+    return Row(
+      children: <Widget>[
+        AdaptiveIcon(icon, size: 18, color: accent),
+        const SizedBox(width: AdaptiveSpacing.sm),
+        Expanded(
+          child: Text(
+            message,
+            style: CupertinoTheme.of(context)
+                .textTheme
+                .textStyle
+                .copyWith(color: AdaptiveColors.label(context)),
+          ),
+        ),
+        if (onRetry != null)
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: onRetry,
+            child: Text(
+              retryLabel,
+              style: CupertinoTheme.of(context)
+                  .textTheme
+                  .actionTextStyle
+                  .copyWith(color: AdaptiveColors.primary(context)),
+            ),
+          ),
+        if (onDismiss != null)
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: onDismiss,
+            child: AdaptiveIcon(
+              AdaptiveIcons.close,
+              size: 18,
+              color: AdaptiveColors.secondaryLabel(context),
+              semanticLabel: dismissLabel,
+            ),
+          ),
+      ],
     );
   }
 
@@ -126,7 +172,7 @@ class AdaptiveErrorBanner extends StatelessWidget {
       return _buildMaterialStatic(context, scheme);
     }
 
-    return MaterialBanner(
+    Widget banner = MaterialBanner(
       backgroundColor: scheme.errorContainer,
       contentTextStyle: Theme.of(context)
           .textTheme
@@ -136,32 +182,50 @@ class AdaptiveErrorBanner extends StatelessWidget {
       content: Text(message),
       actions: actions,
     );
+
+    if (onTap != null) {
+      banner = InkWell(
+        onTap: onTap,
+        child: banner,
+      );
+    }
+
+    return banner;
   }
 
   Widget _buildMaterialStatic(BuildContext context, ColorScheme scheme) {
+    Widget content = Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AdaptiveSpacing.page,
+        vertical: AdaptiveSpacing.md,
+      ),
+      child: Row(
+        children: <Widget>[
+          AdaptiveIcon(icon, size: 24, color: scheme.onErrorContainer),
+          const SizedBox(width: AdaptiveSpacing.md),
+          Expanded(
+            child: Text(
+              message,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyMedium
+                  ?.copyWith(color: scheme.onErrorContainer),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (onTap != null) {
+      content = InkWell(
+        onTap: onTap,
+        child: content,
+      );
+    }
+
     return Material(
       color: scheme.errorContainer,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AdaptiveSpacing.page,
-          vertical: AdaptiveSpacing.md,
-        ),
-        child: Row(
-          children: <Widget>[
-            AdaptiveIcon(icon, size: 24, color: scheme.onErrorContainer),
-            const SizedBox(width: AdaptiveSpacing.md),
-            Expanded(
-              child: Text(
-                message,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: scheme.onErrorContainer),
-              ),
-            ),
-          ],
-        ),
-      ),
+      child: content,
     );
   }
 }

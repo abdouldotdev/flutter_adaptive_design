@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_design/flutter_adaptive_design.dart';
 import 'package:flutter_adaptive_design/testing.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -65,6 +64,23 @@ void main() {
       await tester.pump();
       expect(tapCount, 1);
     });
+
+    testAdaptiveWidget('renders with useLiquidGlass enabled',
+        (tester, platform) async {
+      await tester.pumpWidget(
+        wrapAdaptiveTestWidget(
+          const AdaptiveEmptyState(
+            useLiquidGlass: true,
+            title: 'Frosted Empty State',
+            subtitle: 'Looking empty and glossy',
+          ),
+        ),
+      );
+
+      expect(find.text('Frosted Empty State'), findsOneWidget);
+      expect(find.text('Looking empty and glossy'), findsOneWidget);
+      expect(find.byType(AdaptiveLiquidGlass), findsOneWidget);
+    });
   });
 
   group('AdaptiveErrorState', () {
@@ -87,6 +103,82 @@ void main() {
       await tester.pump();
       expect(retried, 1);
     });
+
+    testAdaptiveWidget('renders with useLiquidGlass enabled',
+        (tester, platform) async {
+      await tester.pumpWidget(
+        wrapAdaptiveTestWidget(
+          const AdaptiveErrorState(
+            useLiquidGlass: true,
+            title: 'Frosted Error',
+            message: 'Failed to sync frosted data',
+          ),
+        ),
+      );
+
+      expect(find.text('Frosted Error'), findsOneWidget);
+      expect(find.text('Failed to sync frosted data'), findsOneWidget);
+      expect(find.byType(AdaptiveLiquidGlass), findsOneWidget);
+    });
+  });
+
+  group('AdaptiveErrorBanner', () {
+    testAdaptiveWidget('renders message and triggers retry/dismiss',
+        (tester, platform) async {
+      int retried = 0;
+      int dismissed = 0;
+
+      await tester.pumpWidget(
+        wrapAdaptiveTestWidget(
+          AdaptiveErrorBanner(
+            message: 'Something went wrong',
+            onRetry: () => retried++,
+            onDismiss: () => dismissed++,
+          ),
+        ),
+      );
+
+      expect(find.text('Something went wrong'), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
+
+      await tester.tap(find.text('Retry'));
+      await tester.pump();
+      expect(retried, 1);
+
+      if (platform == TargetPlatform.iOS) {
+        final dismissBtn = find.byType(CupertinoButton).last;
+        await tester.tap(dismissBtn);
+      } else {
+        await tester.tap(find.text('Dismiss'));
+      }
+      await tester.pump();
+      expect(dismissed, 1);
+    });
+
+    testAdaptiveWidget('renders with useLiquidGlass on iOS',
+        (tester, platform) async {
+      int tapped = 0;
+      await tester.pumpWidget(
+        wrapAdaptiveTestWidget(
+          AdaptiveErrorBanner(
+            useLiquidGlass: true,
+            message: 'Frosted banner message',
+            onTap: () => tapped++,
+          ),
+        ),
+      );
+
+      expect(find.text('Frosted banner message'), findsOneWidget);
+
+      if (platform == TargetPlatform.iOS) {
+        expect(find.byType(AdaptiveLiquidGlass), findsOneWidget);
+        expect(find.byType(BackdropFilter), findsOneWidget);
+      }
+
+      await tester.tap(find.text('Frosted banner message'));
+      await tester.pump();
+      expect(tapped, 1);
+    });
   });
 
   group('AdaptiveLoadingOverlay & AdaptiveLoadingPage', () {
@@ -103,6 +195,25 @@ void main() {
 
       expect(find.text('Content Under'), findsOneWidget);
       expect(find.byType(AdaptiveProgressIndicator), findsOneWidget);
+    });
+
+    testAdaptiveWidget('AdaptiveLoadingOverlay renders Liquid Glass backdrop filter',
+        (tester, platform) async {
+      await tester.pumpWidget(
+        wrapAdaptiveTestWidget(
+          const AdaptiveLoadingOverlay(
+            isLoading: true,
+            useLiquidGlass: true,
+            blurSigma: 12.0,
+            message: 'Processing Payment...',
+            child: Text('Background Content'),
+          ),
+        ),
+      );
+
+      expect(find.text('Background Content'), findsOneWidget);
+      expect(find.text('Processing Payment...'), findsOneWidget);
+      expect(find.byType(BackdropFilter), findsOneWidget);
     });
 
     testAdaptiveWidget('AdaptiveLoadingPage renders message',

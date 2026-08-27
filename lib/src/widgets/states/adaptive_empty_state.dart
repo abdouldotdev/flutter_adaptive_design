@@ -5,6 +5,7 @@ import '../../foundation/adaptive_icons.dart';
 import '../../foundation/adaptive_tokens.dart';
 import '../../foundation/platform_utils.dart';
 import '../buttons/adaptive_button.dart';
+import '../layout/adaptive_liquid_glass.dart';
 
 /// The "there is nothing here yet" screen: an icon, a title, an optional
 /// explanation and an optional call to action.
@@ -34,6 +35,12 @@ class AdaptiveEmptyState extends StatelessWidget {
   /// Padding around the whole block.
   final EdgeInsetsGeometry? padding;
 
+  /// Whether to render the empty state within a frosted glass container.
+  final bool useLiquidGlass;
+
+  /// Custom corner radius when [useLiquidGlass] is true.
+  final BorderRadius? cardBorderRadius;
+
   const AdaptiveEmptyState({
     super.key,
     this.icon = AdaptiveIcons.info,
@@ -44,46 +51,59 @@ class AdaptiveEmptyState extends StatelessWidget {
     this.iconSize = 64,
     this.iconColor,
     this.padding,
+    this.useLiquidGlass = false,
+    this.cardBorderRadius,
   });
 
   @override
   Widget build(BuildContext context) {
     final bool hasAction = actionLabel != null && onAction != null;
 
+    final Widget stateContent = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        AdaptiveIcon(
+          icon,
+          size: iconSize,
+          color: iconColor ?? AdaptiveColors.secondaryLabel(context),
+        ),
+        const SizedBox(height: AdaptiveSpacing.lg),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: _titleStyle(context),
+        ),
+        if (subtitle != null) ...<Widget>[
+          const SizedBox(height: AdaptiveSpacing.sm),
+          Text(
+            subtitle!,
+            textAlign: TextAlign.center,
+            style: _subtitleStyle(context),
+          ),
+        ],
+        if (hasAction) ...<Widget>[
+          const SizedBox(height: AdaptiveSpacing.xl),
+          AdaptiveButton(
+            onPressed: onAction,
+            child: Text(actionLabel!),
+          ),
+        ],
+      ],
+    );
+
+    final Widget content = useLiquidGlass
+        ? AdaptiveLiquidGlass(
+            borderRadius:
+                cardBorderRadius ?? BorderRadius.circular(AdaptiveRadius.card),
+            padding: const EdgeInsets.all(AdaptiveSpacing.xl),
+            child: stateContent,
+          )
+        : stateContent;
+
     return Center(
       child: SingleChildScrollView(
         padding: padding ?? const EdgeInsets.all(AdaptiveSpacing.xxl),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            AdaptiveIcon(
-              icon,
-              size: iconSize,
-              color: iconColor ?? AdaptiveColors.secondaryLabel(context),
-            ),
-            const SizedBox(height: AdaptiveSpacing.lg),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: _titleStyle(context),
-            ),
-            if (subtitle != null) ...<Widget>[
-              const SizedBox(height: AdaptiveSpacing.sm),
-              Text(
-                subtitle!,
-                textAlign: TextAlign.center,
-                style: _subtitleStyle(context),
-              ),
-            ],
-            if (hasAction) ...<Widget>[
-              const SizedBox(height: AdaptiveSpacing.xl),
-              AdaptiveButton(
-                onPressed: onAction,
-                child: Text(actionLabel!),
-              ),
-            ],
-          ],
-        ),
+        child: content,
       ),
     );
   }

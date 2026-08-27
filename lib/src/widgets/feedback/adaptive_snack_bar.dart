@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../foundation/platform_utils.dart';
+import '../layout/adaptive_liquid_glass.dart';
 
 /// Adaptive snack bar that renders a [SnackBar] on Material platforms
-/// and a custom iOS-style overlay toast on Cupertino platforms.
+/// and a custom iOS-style overlay toast / floating liquid glass banner on Cupertino platforms.
 class AdaptiveSnackBar {
   const AdaptiveSnackBar._();
 
@@ -19,9 +21,13 @@ class AdaptiveSnackBar {
     Duration duration = const Duration(seconds: 3),
     Color? backgroundColor,
     Color? textColor,
+    bool useLiquidGlass = false,
+    Widget? leading,
   }) {
-    if (PlatformUtils.isCupertino) {
-      _showCupertinoToast(
+    HapticFeedback.lightImpact();
+
+    if (useLiquidGlass || PlatformUtils.isCupertino) {
+      _showOverlayToast(
         context: context,
         message: message,
         actionLabel: actionLabel,
@@ -29,6 +35,8 @@ class AdaptiveSnackBar {
         duration: duration,
         backgroundColor: backgroundColor,
         textColor: textColor,
+        useLiquidGlass: useLiquidGlass,
+        leading: leading,
       );
     } else {
       _showMaterialSnackBar(
@@ -65,17 +73,38 @@ class AdaptiveSnackBar {
           ? SnackBarAction(
               label: actionLabel,
               textColor: textColor,
-              onPressed: onAction ?? () {},
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                onAction?.call();
+              },
             )
           : null,
     );
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(snackBar);
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger != null) {
+      try {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+        return;
+      } catch (_) {
+        // Fall back to overlay toast
+      }
+    }
+
+    _showOverlayToast(
+      context: context,
+      message: message,
+      actionLabel: actionLabel,
+      onAction: onAction,
+      duration: duration,
+      backgroundColor: backgroundColor,
+      textColor: textColor,
+    );
   }
 
-  static void _showCupertinoToast({
+  static void _showOverlayToast({
     required BuildContext context,
     required String message,
     String? actionLabel,
@@ -83,10 +112,13 @@ class AdaptiveSnackBar {
     required Duration duration,
     Color? backgroundColor,
     Color? textColor,
+    bool useLiquidGlass = false,
+    Widget? leading,
   }) {
     final overlay = Overlay.of(context);
     late final OverlayEntry entry;
     late final AnimationController controller;
+    Timer? timer;
 
     controller = AnimationController(
       vsync: overlay,
@@ -100,21 +132,30 @@ class AdaptiveSnackBar {
       reverseCurve: Curves.easeInCubic,
     );
 
+    void dismiss() {
+      timer?.cancel();
+      if (controller.isAnimating ||
+          controller.status == AnimationStatus.dismissed) {
+        return;
+      }
+      controller.reverse().then((_) {
+        entry.remove();
+        controller.dispose();
+      });
+    }
+
     entry = OverlayEntry(
       builder: (context) {
-        return _CupertinoToastOverlay(
+        return _FloatingToastOverlay(
           animation: curved,
           message: message,
           actionLabel: actionLabel,
           onAction: onAction,
           backgroundColor: backgroundColor,
           textColor: textColor,
-          onDismiss: () {
-            controller.reverse().then((_) {
-              entry.remove();
-              controller.dispose();
-            });
-          },
+          useLiquidGlass: useLiquidGlass,
+          leading: leading,
+          onDismiss: dismiss,
         );
       },
     );
@@ -122,18 +163,15 @@ class AdaptiveSnackBar {
     overlay.insert(entry);
     controller.forward();
 
-    Timer(duration, () {
+    timer = Timer(duration, () {
       if (controller.status == AnimationStatus.completed) {
-        controller.reverse().then((_) {
-          entry.remove();
-          controller.dispose();
-        });
+        dismiss();
       }
     });
   }
 }
 
-class _CupertinoToastOverlay extends StatelessWidget {
+class _FloatingToastOverlay extends StatelessWidget {
   final Animation<double> animation;
   final String message;
   final String? actionLabel;
@@ -141,8 +179,10 @@ class _CupertinoToastOverlay extends StatelessWidget {
   final VoidCallback onDismiss;
   final Color? backgroundColor;
   final Color? textColor;
+  final bool useLiquidGlass;
+  final Widget? leading;
 
-  const _CupertinoToastOverlay({
+  const _FloatingToastOverlay({
     required this.animation,
     required this.message,
     this.actionLabel,
@@ -150,19 +190,12 @@ class _CupertinoToastOverlay extends StatelessWidget {
     required this.onDismiss,
     this.backgroundColor,
     this.textColor,
+    this.useLiquidGlass = false,
+    this.leading,
   });
 
   @override
   Widget build(BuildContext context) {
-    final brightness = CupertinoTheme.brightnessOf(context);
-    final isDark = brightness == Brightness.dark;
-    final effectiveBackground = backgroundColor ??
-        (isDark
-            ? const Color(0xE6363636)
-            : const Color(0xE6F2F2F7));
-    final effectiveTextColor = textColor ??
-        (isDark ? CupertinoColors.white : CupertinoColors.black);
-
     return Positioned(
       bottom: 0,
       left: 0,
@@ -184,61 +217,94 @@ class _CupertinoToastOverlay extends StatelessWidget {
                     onDismiss();
                   }
                 },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: effectiveBackground,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: CupertinoColors.black.withValues(alpha: 0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          message,
-                          style: TextStyle(
-                            color: effectiveTextColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            decoration: TextDecoration.none,
-                          ),
-                        ),
-                      ),
-                      if (actionLabel != null) ...[
-                        const SizedBox(width: 12),
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          onPressed: () {
-                            onDismiss();
-                            onAction?.call();
-                          },
-                          child: Text(
-                            actionLabel!,
-                            style: TextStyle(
-                              color: CupertinoTheme.of(context).primaryColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+                child: _buildBannerContent(context),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBannerContent(BuildContext context) {
+    final body = _buildInnerRow(context);
+
+    if (useLiquidGlass) {
+      return AdaptiveLiquidGlass(
+        variant: LiquidGlassVariant.dense,
+        borderRadius: BorderRadius.circular(18),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        tintColor: backgroundColor,
+        child: body,
+      );
+    }
+
+    final brightness = CupertinoTheme.brightnessOf(context);
+    final isDark = brightness == Brightness.dark;
+    final effectiveBackground = backgroundColor ??
+        (isDark ? const Color(0xE6363636) : const Color(0xE6F2F2F7));
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: effectiveBackground,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: body,
+    );
+  }
+
+  Widget _buildInnerRow(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final effectiveTextColor = textColor ??
+        (isDark ? CupertinoColors.white : CupertinoColors.black);
+
+    return Row(
+      children: [
+        if (leading != null) ...[
+          leading!,
+          const SizedBox(width: 10),
+        ],
+        Expanded(
+          child: Text(
+            message,
+            style: TextStyle(
+              color: effectiveTextColor,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              decoration: TextDecoration.none,
+            ),
+          ),
+        ),
+        if (actionLabel != null) ...[
+          const SizedBox(width: 12),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            onPressed: () {
+              HapticFeedback.selectionClick();
+              onDismiss();
+              onAction?.call();
+            },
+            child: Text(
+              actionLabel!,
+              style: TextStyle(
+                color: CupertinoTheme.of(context).primaryColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -2,12 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../foundation/platform_widget.dart';
+import 'adaptive_liquid_glass.dart';
 
 /// Adaptive card widget.
 ///
 /// Material: [Card] with M3 styling (elevation, shape).
-/// Cupertino: [Container] with rounded corners and subtle background,
-/// matching the iOS grouped list section aesthetic.
+/// Cupertino: [Container] or [AdaptiveLiquidGlass] with rounded corners
+/// and subtle background / frosted glass.
 class AdaptiveCard extends PlatformWidget<Card, Widget> {
   final Widget? child;
   final EdgeInsetsGeometry? margin;
@@ -17,6 +18,8 @@ class AdaptiveCard extends PlatformWidget<Card, Widget> {
   final ShapeBorder? shape;
   final double borderRadius;
   final VoidCallback? onTap;
+  final bool useLiquidGlass;
+  final bool enableSpringFeedback;
 
   const AdaptiveCard({
     super.key,
@@ -28,6 +31,8 @@ class AdaptiveCard extends PlatformWidget<Card, Widget> {
     this.shape,
     this.borderRadius = 12.0,
     this.onTap,
+    this.useLiquidGlass = false,
+    this.enableSpringFeedback = true,
   });
 
   @override
@@ -36,7 +41,7 @@ class AdaptiveCard extends PlatformWidget<Card, Widget> {
         ? Padding(padding: padding!, child: child)
         : child;
 
-    final card = Card(
+    return Card(
       margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: color,
       elevation: elevation,
@@ -52,20 +57,37 @@ class AdaptiveCard extends PlatformWidget<Card, Widget> {
             )
           : content,
     );
-
-    return card;
   }
 
   @override
   Widget buildCupertinoWidget(BuildContext context) {
-    final brightness = CupertinoTheme.brightnessOf(context);
+    final effectiveMargin =
+        margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+
+    if (useLiquidGlass) {
+      return Padding(
+        padding: effectiveMargin,
+        child: AdaptiveLiquidGlass(
+          borderRadius: BorderRadius.circular(borderRadius),
+          padding: padding ?? EdgeInsets.zero,
+          tintColor: color,
+          onTap: onTap,
+          enableSpringFeedback: enableSpringFeedback,
+          child: child ?? const SizedBox.shrink(),
+        ),
+      );
+    }
+
+    final brightness = CupertinoTheme.maybeBrightnessOf(context) ??
+        MediaQuery.maybePlatformBrightnessOf(context) ??
+        Brightness.light;
     final resolvedColor = color ??
         (brightness == Brightness.dark
             ? const Color(0xFF1C1C1E)
             : CupertinoColors.white);
 
     Widget content = Container(
-      margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: effectiveMargin,
       padding: padding,
       decoration: BoxDecoration(
         color: resolvedColor,

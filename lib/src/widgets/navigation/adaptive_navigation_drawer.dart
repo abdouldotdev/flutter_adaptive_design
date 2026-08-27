@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -33,6 +34,8 @@ class AdaptiveDrawerSection {
 
 /// Adaptive navigation drawer that renders [NavigationDrawer] on Material
 /// platforms and a Cupertino-styled drawer on Cupertino platforms.
+///
+/// Supports optional Liquid Glass frosted blur via [useLiquidGlass].
 class AdaptiveNavigationDrawer extends StatelessWidget {
   /// The header widget displayed at the top of the drawer.
   final Widget? header;
@@ -55,6 +58,9 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
   /// The width of the drawer.
   final double width;
 
+  /// Whether to render with modern Liquid Glass (frosted blur) styling.
+  final bool useLiquidGlass;
+
   const AdaptiveNavigationDrawer({
     super.key,
     this.header,
@@ -64,6 +70,7 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
     this.onDestinationSelected,
     this.backgroundColor,
     this.width = 304,
+    this.useLiquidGlass = false,
   }) : assert(
           items != null || sections != null,
           'Either items or sections must be provided.',
@@ -85,7 +92,33 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
   }
 
   Widget _buildMaterialDrawer(BuildContext context) {
-    final destinations = _allItems.map((item) {
+    final theme = Theme.of(context);
+    return NavigationDrawer(
+      selectedIndex: selectedIndex,
+      onDestinationSelected: _handleDestinationSelected,
+      backgroundColor: backgroundColor ??
+          (useLiquidGlass ? theme.colorScheme.surfaceContainerLow : null),
+      elevation: useLiquidGlass ? 2.0 : null,
+      children: [
+        if (header != null) ...[
+          header!,
+          const Divider(),
+        ],
+        ..._buildMaterialDestinations(),
+      ],
+    );
+  }
+
+  void _handleDestinationSelected(int index) {
+    final allItems = _allItems;
+    if (index >= 0 && index < allItems.length) {
+      allItems[index].onTap?.call();
+    }
+    onDestinationSelected?.call(index);
+  }
+
+  List<Widget> _buildMaterialDestinations() {
+    return _allItems.map((item) {
       return NavigationDrawerDestination(
         icon: Icon(item.icon),
         selectedIcon: item.selectedIcon != null
@@ -94,81 +127,82 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
         label: Text(item.label),
       );
     }).toList();
-
-    final children = <Widget>[];
-
-    if (header != null) {
-      children.add(header!);
-      children.add(const Divider());
-    }
-
-    if (sections != null) {
-      for (final section in sections!) {
-        if (section.title != null) {
-          children.add(
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 16, 16, 8),
-              child: Text(
-                section.title!,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-              ),
-            ),
-          );
-        }
-      }
-    }
-
-    return NavigationDrawer(
-      selectedIndex: selectedIndex,
-      onDestinationSelected: (index) {
-        final allItems = _allItems;
-        if (index >= 0 && index < allItems.length) {
-          allItems[index].onTap?.call();
-        }
-        onDestinationSelected?.call(index);
-      },
-      backgroundColor: backgroundColor,
-      children: [
-        if (header != null) ...[
-          header!,
-          const Divider(),
-        ],
-        ...destinations,
-      ],
-    );
   }
 
   Widget _buildCupertinoDrawer(BuildContext context) {
     final cupertinoTheme = CupertinoTheme.of(context);
-    final effectiveBackground = backgroundColor ??
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
+
+    final content = SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (header != null) ...[
+            header!,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(
+                height: 1,
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.08),
+              ),
+            ),
+          ],
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: _buildCupertinoItems(context, cupertinoTheme),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (useLiquidGlass) {
+      return SizedBox(
+        width: width,
+        child: ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: _resolveCupertinoBackground(isDark),
+                border: _resolveCupertinoBorder(isDark),
+              ),
+              child: content,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final solidBg = backgroundColor ??
         CupertinoColors.systemGroupedBackground.resolveFrom(context);
 
     return SizedBox(
       width: width,
       child: ColoredBox(
-        color: effectiveBackground,
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (header != null) ...[
-                header!,
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Divider(height: 1),
-                ),
-              ],
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  children: _buildCupertinoItems(context, cupertinoTheme),
-                ),
-              ),
-            ],
-          ),
-        ),
+        color: solidBg,
+        child: content,
+      ),
+    );
+  }
+
+  Color _resolveCupertinoBackground(bool isDark) {
+    if (backgroundColor != null) return backgroundColor!;
+    return isDark
+        ? const Color(0xFF1E1E1E).withValues(alpha: 0.70)
+        : const Color(0xFFF8F8F8).withValues(alpha: 0.75);
+  }
+
+  Border _resolveCupertinoBorder(bool isDark) {
+    return Border(
+      right: BorderSide(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.15)
+            : Colors.black.withValues(alpha: 0.1),
+        width: 0.5,
       ),
     );
   }
@@ -178,24 +212,10 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
     CupertinoThemeData theme,
   ) {
     final widgets = <Widget>[];
-
     if (sections != null) {
       for (final section in sections!) {
         if (section.title != null) {
-          widgets.add(
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 16, 4),
-              child: Text(
-                section.title!.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: CupertinoColors.secondaryLabel.resolveFrom(context),
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          );
+          widgets.add(_buildCupertinoSectionHeader(context, section.title!));
         }
         for (final item in section.items) {
           widgets.add(_buildCupertinoItem(context, item, theme));
@@ -206,8 +226,22 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
         widgets.add(_buildCupertinoItem(context, item, theme));
       }
     }
-
     return widgets;
+  }
+
+  Widget _buildCupertinoSectionHeader(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 16, 4),
+      child: Text(
+        title.toUpperCase(),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: CupertinoColors.secondaryLabel.resolveFrom(context),
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
   }
 
   Widget _buildCupertinoItem(
@@ -226,12 +260,7 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? primaryColor.withValues(alpha: 0.1)
-              : null,
-          borderRadius: BorderRadius.circular(16),
-        ),
+        decoration: _buildCupertinoItemDecoration(isSelected, primaryColor),
         child: Row(
           children: [
             Icon(
@@ -253,6 +282,27 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  BoxDecoration? _buildCupertinoItemDecoration(
+    bool isSelected,
+    Color primaryColor,
+  ) {
+    if (!isSelected) return null;
+    if (useLiquidGlass) {
+      return BoxDecoration(
+        color: primaryColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: primaryColor.withValues(alpha: 0.25),
+          width: 0.5,
+        ),
+      );
+    }
+    return BoxDecoration(
+      color: primaryColor.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(16),
     );
   }
 }

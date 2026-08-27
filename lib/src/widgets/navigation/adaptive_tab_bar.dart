@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../foundation/adaptive_icons.dart';
 import '../../foundation/platform_utils.dart';
+import '../layout/adaptive_liquid_glass.dart';
 
 /// Represents a tab with its label, optional icon, and content widget.
 class AdaptiveTab {
@@ -19,6 +20,8 @@ class AdaptiveTab {
 
 /// Adaptive tab bar that renders [TabBar]+[TabBarView] on Material platforms
 /// and a [CupertinoSlidingSegmentedControl]+[IndexedStack] on Cupertino.
+///
+/// Supports optional Liquid Glass frosted blur via [useLiquidGlass].
 class AdaptiveTabBar extends StatefulWidget {
   /// The list of tabs to display.
   final List<AdaptiveTab> tabs;
@@ -44,6 +47,9 @@ class AdaptiveTabBar extends StatefulWidget {
   /// Padding around the segmented control (Cupertino only).
   final EdgeInsets cupertinoPadding;
 
+  /// Whether to render with modern Liquid Glass (frosted blur) styling.
+  final bool useLiquidGlass;
+
   const AdaptiveTabBar({
     super.key,
     required this.tabs,
@@ -57,6 +63,7 @@ class AdaptiveTabBar extends StatefulWidget {
       horizontal: 16,
       vertical: 8,
     ),
+    this.useLiquidGlass = false,
   });
 
   @override
@@ -72,6 +79,10 @@ class _AdaptiveTabBarState extends State<AdaptiveTabBar>
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
+    _initController();
+  }
+
+  void _initController() {
     _tabController = TabController(
       length: widget.tabs.length,
       vsync: this,
@@ -119,18 +130,7 @@ class _AdaptiveTabBarState extends State<AdaptiveTabBar>
   Widget _buildMaterialTabs(BuildContext context) {
     return Column(
       children: [
-        TabBar(
-          controller: _tabController,
-          indicatorColor: widget.indicatorColor,
-          labelColor: widget.selectedColor,
-          unselectedLabelColor: widget.unselectedColor,
-          tabs: widget.tabs.map((tab) {
-            if (tab.icon != null) {
-              return Tab(text: tab.label, icon: AdaptiveIcon(tab.icon));
-            }
-            return Tab(text: tab.label);
-          }).toList(),
-        ),
+        _buildMaterialHeader(context),
         Expanded(
           child: TabBarView(
             controller: _tabController,
@@ -141,46 +141,46 @@ class _AdaptiveTabBarState extends State<AdaptiveTabBar>
     );
   }
 
+  Widget _buildMaterialHeader(BuildContext context) {
+    final theme = Theme.of(context);
+    final tabBar = TabBar(
+      controller: _tabController,
+      indicatorColor: widget.indicatorColor,
+      labelColor: widget.selectedColor,
+      unselectedLabelColor: widget.unselectedColor,
+      indicatorSize: TabBarIndicatorSize.tab,
+      tabs: widget.tabs.map(_buildMaterialTab).toList(),
+    );
+
+    if (widget.useLiquidGlass) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Material(
+          color: theme.colorScheme.surfaceContainerHigh,
+          elevation: 2.0,
+          borderRadius: BorderRadius.circular(24),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: tabBar,
+          ),
+        ),
+      );
+    }
+
+    return tabBar;
+  }
+
+  Widget _buildMaterialTab(AdaptiveTab tab) {
+    if (tab.icon != null) {
+      return Tab(text: tab.label, icon: AdaptiveIcon(tab.icon));
+    }
+    return Tab(text: tab.label);
+  }
+
   Widget _buildCupertinoTabs(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: widget.cupertinoPadding,
-          child: SizedBox(
-            width: double.infinity,
-            child: CupertinoSlidingSegmentedControl<int>(
-              groupValue: _selectedIndex,
-              thumbColor: widget.selectedColor ??
-                  CupertinoColors.systemBackground.resolveFrom(context),
-              onValueChanged: (index) {
-                if (index != null) {
-                  setState(() => _selectedIndex = index);
-                  _tabController.animateTo(index);
-                  widget.onTabChanged?.call(index);
-                }
-              },
-              children: {
-                for (int i = 0; i < widget.tabs.length; i++)
-                  i: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (widget.tabs[i].icon != null) ...[
-                          AdaptiveIcon(widget.tabs[i].icon, size: 16),
-                          const SizedBox(width: 4),
-                        ],
-                        Text(widget.tabs[i].label),
-                      ],
-                    ),
-                  ),
-              },
-            ),
-          ),
-        ),
+        _buildCupertinoHeader(context),
         Expanded(
           child: widget.keepAlive
               ? IndexedStack(
@@ -190,6 +190,68 @@ class _AdaptiveTabBarState extends State<AdaptiveTabBar>
               : widget.tabs[_selectedIndex].child,
         ),
       ],
+    );
+  }
+
+  Widget _buildCupertinoHeader(BuildContext context) {
+    final segmentedControl = _buildCupertinoSegmentedControl(context);
+
+    if (widget.useLiquidGlass) {
+      return Padding(
+        padding: widget.cupertinoPadding,
+        child: AdaptiveLiquidGlass(
+          variant: LiquidGlassVariant.dense,
+          borderRadius: BorderRadius.circular(20),
+          padding: const EdgeInsets.all(4),
+          child: SizedBox(
+            width: double.infinity,
+            child: segmentedControl,
+          ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: widget.cupertinoPadding,
+      child: SizedBox(
+        width: double.infinity,
+        child: segmentedControl,
+      ),
+    );
+  }
+
+  Widget _buildCupertinoSegmentedControl(BuildContext context) {
+    return CupertinoSlidingSegmentedControl<int>(
+      groupValue: _selectedIndex,
+      thumbColor: widget.selectedColor ??
+          CupertinoColors.systemBackground.resolveFrom(context),
+      onValueChanged: (index) {
+        if (index != null) {
+          setState(() => _selectedIndex = index);
+          _tabController.animateTo(index);
+          widget.onTabChanged?.call(index);
+        }
+      },
+      children: {
+        for (int i = 0; i < widget.tabs.length; i++)
+          i: _buildCupertinoSegmentItem(widget.tabs[i]),
+      },
+    );
+  }
+
+  Widget _buildCupertinoSegmentItem(AdaptiveTab tab) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (tab.icon != null) ...[
+            AdaptiveIcon(tab.icon, size: 16),
+            const SizedBox(width: 4),
+          ],
+          Text(tab.label),
+        ],
+      ),
     );
   }
 }
