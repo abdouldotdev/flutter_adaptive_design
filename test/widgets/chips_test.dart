@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_design/flutter_adaptive_design.dart';
 import 'package:flutter_adaptive_design/testing.dart';
