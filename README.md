@@ -1,25 +1,82 @@
-# flutter_adaptive_design
+# Flutter Adaptive Design (`flutter_adaptive_design`)
 
-[![pub package](https://img.shields.io/pub/v/flutter_adaptive_design.svg)](https://pub.dev/packages/flutter_adaptive_design)
+[![pub package](https://img.shields.io/pub/v/flutter_adaptive_design.svg?color=blue)](https://pub.dev/packages/flutter_adaptive_design)
+[![likes](https://img.shields.io/pub/likes/flutter_adaptive_design)](https://pub.dev/packages/flutter_adaptive_design/score)
+[![popularity](https://img.shields.io/pub/popularity/flutter_adaptive_design)](https://pub.dev/packages/flutter_adaptive_design/score)
+[![pub points](https://img.shields.io/pub/points/flutter_adaptive_design)](https://pub.dev/packages/flutter_adaptive_design/score)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/abdouldotdev/flutter_adaptive_design/blob/main/LICENSE)
 [![platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android%20%7C%20Web%20%7C%20macOS%20%7C%20Windows%20%7C%20Linux-lightgrey.svg)](https://pub.dev/packages/flutter_adaptive_design)
 [![code style](https://img.shields.io/badge/style-flutter__lints-blue)](https://pub.dev/packages/flutter_lints)
 
-An enterprise-grade, zero-overhead Flutter design system package that delivers true platform-native UI for **iOS (Apple Human Interface Guidelines)** and **Android (Material 3)** from a single unified API.
+> **The unified, production-grade Flutter design system that automatically renders native iOS (Apple Human Interface Guidelines / Cupertino) and Android (Material Design 3) from a single codebase.**
+
+Stop writing messy `if (Theme.of(context).platform == TargetPlatform.iOS)` conditionals. `flutter_adaptive_design` gives you **50+ production-ready adaptive widgets**, **system design tokens** (8pt spacing, platform radii, eased motion curves), **semantic iconography** via HugeIcons & Material/Cupertino glyphs, **responsive multi-device layouts**, and a **bi-platform test harness**.
 
 ---
 
-## 🌟 Why `flutter_adaptive_design`?
+## ⚡ Quick Links & Navigation
 
-Building apps that feel truly native on both iOS and Android traditionally required messy conditional branches (`if (Platform.isIOS)`), broken web builds due to `dart:io`, mismatched font scaling, inconsistent touch targets, and duplicated UI code.
+- [Why Flutter Adaptive Design?](#-why-flutter_adaptive_design)
+- [Feature Comparison vs Existing Solutions](#-feature-comparison)
+- [Installation](#-installation)
+- [Quick Start in 60 Seconds](#-quick-start)
+- [Design Tokens (Spacing, Radius, Motion, Colors, Typography)](#-design-tokens--foundations)
+- [Complete Component Catalog (+96 Components)](#-component-catalog)
+- [Real-World Screen Recipes (Settings, Auth, Responsive)](#-real-world-recipes)
+- [Bi-Platform Testing Guide](#-bi-platform-testing-guide)
+- [Live Preview & Platform Switching](#-live-preview--platform-switching)
+- [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
+- [Interactive Example Gallery](#-example-application)
+- [License & Contributing](#-license)
 
-`flutter_adaptive_design` eliminates all of that by providing:
-- **50+ Unified Adaptive Primitives**: Write `AdaptiveButton`, `AdaptiveScaffold`, `AdaptiveTextField`, and get pixel-perfect Cupertino or Material 3 components automatically.
-- **Web & Multiplatform Safe**: Conditional OS imports prevent web compile errors.
-- **Design Tokens**: Standardized 8pt spacing grid, platform radii (squircle vs M3), eased motion curves, and semantic colors.
-- **Semantic Iconography**: Native integration with `hugeicons`, Flutter `IconData`, and custom SVGs.
-- **Responsive Multi-Device Engine**: Breakpoints, responsive grids, constrained content, master-detail layouts, and responsive scaffolds.
-- **First-Class Testing Suite**: Dedicated `testAdaptiveWidget` harness to verify Cupertino and Material branches in automated CI/CD pipelines.
+---
+
+## 💡 Why `flutter_adaptive_design`?
+
+Building cross-platform apps often leads to the **"uncanny valley"** of mobile UI:
+- Material buttons and bottom sheets on iPhones make iOS users feel alienated.
+- Cupertino navigation bars and bouncing overscroll on Android feel out of place.
+- Manually branching widget trees (`Platform.isIOS ? ... : ...`) bloats codebases and breaks on Flutter Web due to `dart:io` runtime crashes.
+- Custom styling often breaks text scaling accessibility (Dynamic Type / font scaler) and accessibility touch targets (44pt on iOS, 48dp on Android).
+
+`flutter_adaptive_design` solves this once and for all:
+
+```
+                          ┌───────────────────────────┐
+                          │   Adaptive Component API  │
+                          │   (e.g., AdaptiveButton)   │
+                          └─────────────┬─────────────┘
+                                        │
+                 ┌──────────────────────┴──────────────────────┐
+                 ▼                                             ▼
+     ┌───────────────────────┐                     ┌───────────────────────┐
+     │      iOS / macOS      │                     │   Android / Web / OS  │
+     │  Apple Cupertino HIG  │                     │   Google Material 3   │
+     ├───────────────────────┤                     ├───────────────────────┤
+     │ • CupertinoButton     │                     │ • FilledButton (M3)   │
+     │ • CupertinoTextField  │                     │ • TextField (M3)      │
+     │ • CupertinoActionSheet│                     │ • Modal BottomSheet   │
+     │ • BouncingScroll      │                     │ • ClampingScroll      │
+     │ • 10pt Squircle Radius│                     │ • 20pt Pill Radius    │
+     │ • EaseInOut Motion    │                     │ • Emphasized Easing   │
+     └───────────────────────┘                     └───────────────────────┘
+```
+
+---
+
+## 📊 Feature Comparison
+
+| Capability | Standard Flutter | `flutter_platform_widgets` | `flutter_adaptive_design` |
+|---|:---:|:---:|:---:|
+| **Material 3 (M3) Native Support** | Manual | Partial | **100% Native M3** |
+| **Cupertino HIG Fidelity** | Manual | Basic | **Pixel-Perfect HIG** |
+| **Web-Safe (No `dart:io` crashes)** | ⚠️ Manual | ⚠️ Config needed | **Zero Web Crashes** |
+| **Standard Design Tokens (8pt grid)** | ❌ None | ❌ None | **Built-in (`AdaptiveTokens`)** |
+| **Platform Easing & Motion Curves** | ❌ Manual | ❌ None | **Built-in (`AdaptiveMotion`)** |
+| **Semantic Iconography (HugeIcons/SVG)** | ❌ None | ❌ None | **Built-in (`AdaptiveIcons`)** |
+| **Responsive Engine (Breakpoints/Grid)** | ⚠️ Complex | ❌ None | **Built-in (`Breakpoints`)** |
+| **Bi-Platform Test Runner** | ❌ Manual | ❌ None | **Built-in (`testAdaptiveWidget`)** |
+| **Live Platform Preview (Web & Release)** | ❌ Throws | ❌ None | **Built-in (`debugOverridePlatform`)** |
 
 ---
 
@@ -59,41 +116,52 @@ import 'package:flutter_adaptive_design/flutter_adaptive_design.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_design/flutter_adaptive_design.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class QuickStartView extends StatefulWidget {
+  const QuickStartView({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<QuickStartView> createState() => _QuickStartViewState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  bool _notificationsEnabled = true;
-  final TextEditingController _searchController = TextEditingController();
+class _QuickStartViewState extends State<QuickStartView> {
+  bool _faceIdEnabled = true;
+  final TextEditingController _searchCtrl = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return AdaptiveScaffold(
       appBar: const AdaptiveAppBar(
-        title: 'Dashboard',
+        title: 'Account Settings',
       ),
       body: SingleChildScrollView(
         padding: AdaptiveSpacing.pagePadding,
         child: Column(
           children: [
             AdaptiveSearchBar(
-              controller: _searchController,
-              placeholder: 'Search transactions...',
+              controller: _searchCtrl,
+              placeholder: 'Search preferences...',
             ),
             const SizedBox(height: AdaptiveSpacing.md),
             AdaptiveCard(
-              child: AdaptiveListTile(
-                leading: const AdaptiveIcon(AdaptiveIcons.notification),
-                title: const Text('Push Notifications'),
-                subtitle: const Text('Receive instant alerts'),
-                trailing: AdaptiveSwitch(
-                  value: _notificationsEnabled,
-                  onChanged: (val) => setState(() => _notificationsEnabled = val),
-                ),
+              child: Column(
+                children: [
+                  AdaptiveListTile(
+                    leading: const AdaptiveIcon(AdaptiveIcons.lock),
+                    title: const Text('Biometric Login'),
+                    subtitle: const Text('FaceID / TouchID / Fingerprint'),
+                    trailing: AdaptiveSwitch(
+                      value: _faceIdEnabled,
+                      onChanged: (val) => setState(() => _faceIdEnabled = val),
+                    ),
+                  ),
+                  const AdaptiveDivider(),
+                  AdaptiveListTile(
+                    leading: const AdaptiveIcon(AdaptiveIcons.notification),
+                    title: const Text('Push Notifications'),
+                    trailing: const AdaptiveIcon(AdaptiveIcons.forward, size: 16),
+                    onTap: () {},
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AdaptiveSpacing.lg),
@@ -101,22 +169,22 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 AdaptiveDialog.show(
                   context: context,
-                  title: 'Confirm Action',
-                  content: 'Do you want to proceed with this transfer?',
+                  title: 'Sign Out',
+                  content: 'Are you sure you want to log out of your session?',
                   actions: [
                     AdaptiveDialogAction(
                       label: 'Cancel',
                       onPressed: () => Navigator.pop(context),
                     ),
                     AdaptiveDialogAction(
-                      label: 'Confirm',
-                      isDefault: true,
+                      label: 'Sign Out',
+                      isDestructive: true,
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 );
               },
-              label: 'Make Payment',
+              label: 'Sign Out',
             ),
           ],
         ),
@@ -128,151 +196,164 @@ class _HomeScreenState extends State<HomeScreen> {
 
 ---
 
-## 🎨 Design Tokens & Foundation
+## 🎨 Design Tokens & Foundations
 
 ### 1. Spacing (`AdaptiveSpacing`)
-Based on the standard 8pt grid with 4pt sub-grid support:
+Strict 8-point spatial grid with 4-point precision:
 
-| Token | Size | Purpose |
-|-------|------|---------|
-| `AdaptiveSpacing.xs` | 4pt | Icon/text gaps, tight badges |
-| `AdaptiveSpacing.sm` | 8pt | Internal padding, list item gaps |
-| `AdaptiveSpacing.md` | 12pt | Card inner padding, form spacing |
-| `AdaptiveSpacing.lg` | 16pt | Page gutter, container padding |
-| `AdaptiveSpacing.xl` | 24pt | Section gaps, header margin |
-| `AdaptiveSpacing.xxl` | 32pt | Large feature spacing |
-| `AdaptiveSpacing.xxxl` | 48pt | Empty state / hero spacing |
+| Token | Dimension | Intended Usage |
+|---|:---:|---|
+| `AdaptiveSpacing.xs` | **4pt** | Micro-offsets, badge paddings, icon-to-text spacing |
+| `AdaptiveSpacing.sm` | **8pt** | Compact paddings, list item inner gaps |
+| `AdaptiveSpacing.md` | **12pt** | Form field vertical gutters, card content margins |
+| `AdaptiveSpacing.lg` | **16pt** | Standard page gutter, root screen container padding |
+| `AdaptiveSpacing.xl` | **24pt** | Section-to-section separators, headline spacing |
+| `AdaptiveSpacing.xxl` | **32pt** | Major view divisions |
+| `AdaptiveSpacing.xxxl` | **48pt** | Empty state illustrations, hero headers |
 
-### 2. Radius (`AdaptiveRadius`)
-Provides platform-accurate corner radii:
+### 2. Corner Radii (`AdaptiveRadius`)
+Matches native platform surface geometry:
 
-| Element | iOS (Cupertino) | Android (Material 3) |
-|---------|-----------------|----------------------|
-| Card | 10pt (Squircle) | 12pt (Rounded) |
-| Button | 10pt | 20pt (Full Pill / Rounded) |
-| Dialog | 14pt | 28pt |
-| TextField | 8pt | 4pt |
-| Bottom Sheet | 12pt | 28pt |
+| Component | iOS (Cupertino HIG) | Android (Material 3) |
+|---|:---:|:---:|
+| **Card** | `10pt` (Smooth Squircle) | `12pt` (Rounded Corner) |
+| **Button** | `10pt` (Continuous Corner) | `20pt` (M3 Full Pill) |
+| **Dialog** | `14pt` | `28pt` |
+| **Text Field** | `8pt` | `4pt` |
+| **Modal Sheet** | `12pt` | `28pt` |
 
-### 3. Motion & Curves (`AdaptiveMotion`)
-Platform-tailored transition curves and micro-durations:
-- `AdaptiveMotion.micro`: 120ms (taps, toggles)
-- `AdaptiveMotion.transition`: 280ms (sheets, dialogs)
-- `AdaptiveMotion.page`: 380ms (navigation transitions)
-- `AdaptiveMotion.pageCurve`: `Curves.easeInOut` on iOS, `Curves.easeInOutCubicEmphasized` on Android.
+### 3. Motion & Animation Curves (`AdaptiveMotion`)
+Physics-calibrated animation durations and easing:
+- `AdaptiveMotion.micro`: `120ms` (taps, toggles, check states)
+- `AdaptiveMotion.transition`: `280ms` (bottom sheets, dialogs, drawers)
+- `AdaptiveMotion.page`: `380ms` (page routes, navigation transitions)
+- `AdaptiveMotion.pageCurve`: `Curves.easeInOut` (iOS) ↔ `Curves.easeInOutCubicEmphasized` (Android M3)
 
 ### 4. Semantic Iconography (`AdaptiveIcons` & `AdaptiveIcon`)
-Seamlessly renders stroke-rounded HugeIcons, Flutter `IconData`, or custom widgets with automatic platform dark/light color resolution:
+Unified icon registry supporting **HugeIcons stroke-rounded**, standard **Flutter `IconData`**, and **custom widgets** with automatic Dark/Light dynamic color resolution:
 
 ```dart
-// Semantic preset:
-AdaptiveIcon(AdaptiveIcons.home, size: 24)
+// Intent-based semantic presets:
+AdaptiveIcon(AdaptiveIcons.home)
+AdaptiveIcon(AdaptiveIcons.wallet)
+AdaptiveIcon(AdaptiveIcons.settings)
+AdaptiveIcon(AdaptiveIcons.error, color: AdaptiveColors.destructive(context))
 
-// Flutter IconData:
+// Custom IconData fallback:
 AdaptiveIcon(Icons.star, color: Colors.amber)
-
-// Platform-resolved glyph:
-final icon = AdaptiveIcons.resolve(
-  material: Icons.arrow_back,
-  cupertino: CupertinoIcons.back,
-);
 ```
 
 ---
 
-## 🧩 Comprehensive Component Catalog (+96 Components)
+## 🧩 Component Catalog
 
-### 🏗️ Layout & Structure
-| Component | Cupertino Implementation | Material 3 Implementation |
-|-----------|--------------------------|---------------------------|
-| `AdaptiveScaffold` | `CupertinoPageScaffold` | `Scaffold` |
-| `AdaptiveAppBar` | `CupertinoNavigationBar` | `AppBar` |
-| `AdaptiveSliverAppBar` | `CupertinoSliverNavigationBar` | `SliverAppBar` |
-| `AdaptiveBottomNav` | `CupertinoTabBar` | `NavigationBar` (M3) |
-| `AdaptiveTabScaffold` | `CupertinoTabScaffold` | `Scaffold` with BottomNav |
-| `AdaptiveCard` | Bordered squircle container | `Card` / `ElevatedCard` |
-| `AdaptiveListTile` | `CupertinoListTile` | `ListTile` |
-| `AdaptiveListSection` | `CupertinoListSection` | `Column` with divider styling |
-| `AdaptiveDivider` | 0.5pt hairline separator | `Divider` |
-| `AdaptiveSidebarLayout` | Collapsible split-view | Navigation Rail / Drawer |
+### 🏗️ Layout & Navigation
+- [`AdaptiveScaffold`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/layout/adaptive_scaffold.dart): Resolves `Scaffold` (M3) or `CupertinoPageScaffold` (iOS) with seamless top bar attachment.
+- [`AdaptiveAppBar`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/layout/adaptive_app_bar.dart): Implements `PreferredSizeWidget` and `ObstructingPreferredSizeWidget`.
+- [`AdaptiveSliverAppBar`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/layout/adaptive_sliver_app_bar.dart): Large collapsible iOS navigation bar or M3 large app bar.
+- [`AdaptiveBottomNav`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/layout/adaptive_bottom_nav.dart): Cupertino bottom tab bar or M3 NavigationBar.
+- [`AdaptiveCard`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/layout/adaptive_card.dart): Native squircle container on iOS, elevated M3 card on Android.
+- [`AdaptiveListTile`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/layout/adaptive_list_tile.dart) & [`AdaptiveListSection`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/layout/adaptive_list_section.dart): Grouped iOS settings style or Material list view.
+- [`AdaptiveDivider`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/layout/adaptive_divider.dart): 0.5pt hairline separator on iOS, 1dp divider on Android.
+- [`AdaptiveTabBar`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/navigation/adaptive_tab_bar.dart): Segmented control on iOS, `TabBar` + `TabBarView` on Android.
+- [`AdaptiveNavigationDrawer`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/navigation/adaptive_navigation_drawer.dart): iOS modal drawer or M3 permanent/modal navigation drawer.
+- [`AdaptivePageRoute`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/navigation/adaptive_page_route.dart): Push transitions with swipe-to-back gesture on iOS.
 
-### 🔘 Buttons & Actions
-| Component | Description |
-|-----------|-------------|
-| `AdaptiveButton` | `CupertinoButton.filled` on iOS, `FilledButton` on Android |
-| `AdaptiveTextButton` | `CupertinoButton` (borderless) on iOS, `TextButton` on Android |
-| `AdaptiveIconButton` | `CupertinoButton` icon on iOS, `IconButton` on Android |
-| `AdaptiveFAB` / `AdaptiveFab` | Circular iOS floating action button or M3 `FloatingActionButton` |
-
-### 📝 Forms & Inputs
-| Component | Description |
-|-----------|-------------|
-| `AdaptiveTextField` | `CupertinoTextField` on iOS, `TextField` (Outlined/Filled) on Android |
-| `AdaptiveSearchBar` | `CupertinoSearchTextField` on iOS, `SearchBar` on Android |
-| `AdaptiveSwitch` | `CupertinoSwitch` on iOS, `Switch` on Android |
-| `AdaptiveSlider` | `CupertinoSlider` on iOS, `Slider` on Android |
-| `AdaptiveCheckbox` | `CupertinoCheckbox` on iOS, `Checkbox` on Android |
-| `AdaptiveRadioGroup` | Native radio selection group per platform |
-| `AdaptiveSegmentedControl` | `CupertinoSlidingSegmentedControl` on iOS, `SegmentedButton` on Android |
-| `AdaptiveFormSection` | Grouped form field wrapper with platform styling |
+### 🔘 Buttons & Inputs
+- [`AdaptiveButton`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/buttons/adaptive_button.dart): Primary filled button (`CupertinoButton.filled` / `FilledButton`).
+- [`AdaptiveTextButton`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/buttons/adaptive_text_button.dart): Borderless action button.
+- [`AdaptiveIconButton`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/buttons/adaptive_icon_button.dart): Touch-target compliant icon trigger.
+- [`AdaptiveFAB`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/buttons/adaptive_fab.dart): Circular floating button on iOS / FloatingActionButton on Android.
+- [`AdaptiveLoadingButton`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_loading_button.dart): Button with integrated activity indicator.
+- [`AdaptiveTextField`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/inputs/adaptive_text_field.dart) & [`AdaptiveFormField`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/inputs/adaptive_form_field.dart): Native text input with form validation.
+- [`AdaptiveSearchBar`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/inputs/adaptive_search_bar.dart): `CupertinoSearchTextField` or M3 `SearchBar`.
+- [`AdaptiveSwitch`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/inputs/adaptive_switch.dart), [`AdaptiveSlider`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/inputs/adaptive_slider.dart), [`AdaptiveCheckbox`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/inputs/adaptive_checkbox.dart), [`AdaptiveRadio`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/inputs/adaptive_radio.dart).
+- [`AdaptiveSegmentedControl`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/inputs/adaptive_segmented_control.dart): Multi-option pill selector.
 
 ### 💬 Feedback & Overlays
-| Component | Description |
-|-----------|-------------|
-| `AdaptiveDialog` | `CupertinoAlertDialog` on iOS, `AlertDialog` on Android |
-| `AdaptiveActionSheet` | `CupertinoActionSheet` on iOS, Modal `BottomSheet` on Android |
-| `AdaptiveSnackBar` | Top floating notification strip on iOS, `SnackBar` on Android |
-| `AdaptiveBanner` | In-flow non-blocking notification banner |
-| `AdaptiveProgressIndicator` | `CupertinoActivityIndicator` on iOS, `CircularProgressIndicator` on Android |
-| `AdaptiveTooltip` | Native long-press tooltip on iOS, `Tooltip` on Android |
+- [`AdaptiveDialog`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/feedback/adaptive_dialog.dart): `CupertinoAlertDialog` on iOS, `AlertDialog` on Android.
+- [`AdaptiveActionSheet`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/feedback/adaptive_action_sheet.dart): Modal action sheet (iOS) / Bottom sheet with actions (Android).
+- [`AdaptiveSnackBar`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/feedback/adaptive_snack_bar.dart): Non-intrusive floating toast/snack.
+- [`AdaptiveProgressIndicator`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/feedback/adaptive_progress_indicator.dart): `CupertinoActivityIndicator` or `CircularProgressIndicator`.
+- [`AdaptiveRefreshIndicator`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/feedback/adaptive_refresh_indicator.dart): iOS native pull-down spinner or Android overscroll swipe refresh.
+- [`AdaptiveTooltip`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/feedback/adaptive_tooltip.dart): Touch and hover-aware tooltip.
+- [`AdaptiveContextMenu`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/context_menu/adaptive_context_menu.dart): Peek & pop contextual menu on iOS / Long-press menu on Android.
+- [`AdaptivePopupMenu`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/navigation/adaptive_popup_menu.dart): Anchor popup menu.
 
-### 🏷️ Chips & Tags
-| Component | Description |
-|-----------|-------------|
-| `AdaptiveChip` | Compact pill tag with optional leading icon |
-| `AdaptiveFilterChip` | Selectable filter tag with active toggle states |
+### ⚡ State & Skeleton Patterns
+- [`AdaptiveEmptyState`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_empty_state.dart): Illustrated empty container with CTA.
+- [`AdaptiveErrorState`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_error_state.dart) & [`AdaptiveErrorBanner`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_error_banner.dart): Full-page and inline error states.
+- [`AdaptiveLoadingOverlay`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_loading_overlay.dart) & [`AdaptiveLoadingPage`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_loading_page.dart).
+- [`AdaptiveSkeletonBox`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_skeleton.dart), [`AdaptiveSkeletonListTile`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_skeleton.dart), [`AdaptiveSkeletonCard`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_skeleton.dart).
+- [`AdaptiveShimmer`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_shimmer.dart): Shimmer animation wrapper.
+- [`AdaptiveDisabled`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/widgets/states/adaptive_disabled.dart): Accessible dimming and interaction suppressor.
 
-### 🧭 Navigation & Pickers
-| Component | Description |
-|-----------|-------------|
-| `AdaptiveNavigationDrawer` | iOS sliding sheet drawer or M3 `NavigationDrawer` |
-| `AdaptivePageRoute` | `CupertinoPageRoute` on iOS, `MaterialPageRoute` on Android |
-| `AdaptivePopupMenu` | Tap action sheet on iOS, `PopupMenuButton` on Android |
-| `AdaptiveTabBar` | `CupertinoSlidingSegmentedControl` or `TabBar` |
-| `AdaptiveDatePicker` | `CupertinoDatePicker` modal or `showDatePicker` dialog |
-| `AdaptiveTimePicker` | `CupertinoDatePicker` time mode or `showTimePicker` dialog |
-| `AdaptivePicker` | Modal wheel picker on iOS or wheel scroll dialog on Android |
-
-### ⚡ State & Placeholder Patterns
-| Component | Description |
-|-----------|-------------|
-| `AdaptiveEmptyState` | Illustrated empty state with title, subtitle, and action button |
-| `AdaptiveErrorState` | Full-page error state with retry callback |
-| `AdaptiveErrorBanner` | Non-blocking inline error strip |
-| `AdaptiveLoadingOverlay` | Semi-transparent modal loading indicator |
-| `AdaptiveLoadingPage` | Full-screen loading indicator with status text |
-| `AdaptiveSkeletonBox` | Shimmer-ready layout placeholder block |
-| `AdaptiveSkeletonListTile` | Placeholder list item with avatar and lines |
-| `AdaptiveSkeletonCard` | Placeholder card container |
-| `AdaptiveShimmer` | Linear shimmering animation effect |
-| `AdaptiveDisabled` | Accessibility-compliant opacity and interaction suppressor |
-
-### 📐 Responsive Layout Engine
-| Component | Description |
-|-----------|-------------|
-| `Breakpoints` | Standard size classes: `compact` (<600pt), `medium` (600–840pt), `expanded` (840–1200pt), `large` (>=1200pt) |
-| `AdaptiveConstrainedContent` | Constrains maximum page content width on large screens with automatic centering |
-| `AdaptiveResponsiveGrid` | Auto-fitting multi-column responsive grid |
-| `AdaptiveMasterDetail` | Automatic split-pane for tablet/desktop and push-route for mobile |
-| `AdaptiveResponsiveScaffold` | Multi-screen scaffold adapting between bottom nav, rail, and permanent drawer |
+### 📐 Responsive Engine
+- [`Breakpoints`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/responsive/breakpoints.dart): `compact` (<600pt), `medium` (600–840pt), `expanded` (840–1200pt), `large` (>=1200pt).
+- [`AdaptiveConstrainedContent`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/responsive/adaptive_constrained_content.dart): Center-constrains page width on desktop/tablets.
+- [`AdaptiveResponsiveGrid`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/responsive/adaptive_responsive_grid.dart): Auto-fit multi-column responsive grid.
+- [`AdaptiveMasterDetail`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/responsive/adaptive_master_detail.dart): Split-pane layout on tablets/web, push-route on phones.
+- [`AdaptiveResponsiveScaffold`](file:///Users/abdoul/development/appbiz-studio/flutter_adaptive_design/lib/src/responsive/adaptive_responsive_scaffold.dart): Responsive scaffold with bottom nav on phone, rail on tablet, permanent drawer on desktop.
 
 ---
 
-## 🧪 Testing Guide
+## 🍳 Real-World Recipes
 
-`flutter_adaptive_design` includes a comprehensive testing library via `package:flutter_adaptive_design/testing.dart`.
+### Recipe 1: Native Date & Time Pickers
 
-### Test Both Platforms in One Go
+```dart
+// Native Date Picker (iOS Modal Wheel / Material Calendar Dialog)
+final DateTime? selectedDate = await AdaptiveDatePicker.show(
+  context: context,
+  initialDate: DateTime.now(),
+  firstDate: DateTime(2020),
+  lastDate: DateTime(2030),
+);
+
+// Native Time Picker (iOS Wheel / Material Clock Dialog)
+final TimeOfDay? selectedTime = await AdaptiveTimePicker.show(
+  context: context,
+  initialTime: TimeOfDay.now(),
+);
+```
+
+### Recipe 2: Multi-Device Responsive Master-Detail
+
+```dart
+class MessagesScreen extends StatelessWidget {
+  const MessagesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AdaptiveMasterDetail(
+      master: ListView.builder(
+        itemCount: 20,
+        itemBuilder: (context, index) => AdaptiveListTile(
+          title: Text('Conversation #$index'),
+          subtitle: const Text('Latest message snippet...'),
+          onTap: () {
+            // Automatically updates detail view on tablet/desktop,
+            // or pushes route on mobile!
+          },
+        ),
+      ),
+      detail: const Center(
+        child: Text('Select a conversation to view messages'),
+      ),
+    );
+  }
+}
+```
+
+---
+
+## 🧪 Bi-Platform Testing Guide
+
+`flutter_adaptive_design` exports a dedicated test runner via `package:flutter_adaptive_design/testing.dart`.
+
+Every test wrapped with `testAdaptiveWidget` runs **twice**:
+1. Once for `TargetPlatform.android` (Material 3)
+2. Once for `TargetPlatform.iOS` (Cupertino)
 
 ```dart
 import 'package:flutter_adaptive_design/flutter_adaptive_design.dart';
@@ -280,9 +361,8 @@ import 'package:flutter_adaptive_design/testing.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('AdaptiveButton Tests', () {
-    // Automatically executes twice: once for Android, once for iOS
-    testAdaptiveWidget('renders native primitive per platform', (tester, platform) async {
+  group('AdaptiveButton Platform Verification', () {
+    testAdaptiveWidget('renders native button primitive', (tester, platform) async {
       await tester.pumpWidget(
         wrapAdaptiveTestWidget(
           AdaptiveButton.label(
@@ -296,8 +376,10 @@ void main() {
 
       if (platform == TargetPlatform.iOS) {
         expect(find.byType(CupertinoButton), findsOneWidget);
+        expect(find.byType(FilledButton), findsNothing);
       } else {
         expect(find.byType(FilledButton), findsOneWidget);
+        expect(find.byType(CupertinoButton), findsNothing);
       }
     });
   });
@@ -308,29 +390,47 @@ void main() {
 
 ## 🔄 Live Preview & Platform Switching
 
-You can dynamically force or preview any platform at runtime (including web demos and release builds):
+Test your UI directly in Flutter Web or your live mobile app without restarting:
 
 ```dart
-// Force iOS preview
+// Force iOS preview across the whole app
 PlatformUtils.debugOverridePlatform = TargetPlatform.iOS;
 
-// Force Android preview
+// Force Android Material 3 preview
 PlatformUtils.debugOverridePlatform = TargetPlatform.android;
 
-// Reset to device platform
+// Revert to host OS behavior
 PlatformUtils.debugOverridePlatform = null;
 ```
 
 ---
 
+## ❓ Frequently Asked Questions (FAQ)
+
+<details>
+<summary><b>Does this package work on Flutter Web without crashing on dart:io?</b></summary>
+Yes! <code>flutter_adaptive_design</code> uses conditional imports (<code>platform_os_stub.dart</code> vs <code>platform_os_io.dart</code>). It is 100% compile-time and runtime safe on Web, macOS, Windows, Linux, Android, and iOS.
+</details>
+
+<details>
+<summary><b>Can I use custom themes and branding colors?</b></summary>
+Absolutely. All widgets respect your <code>ThemeData</code> (M3 colorSchemeSeed, primary colors) and <code>CupertinoThemeData</code>. You can also override colors directly per widget.
+</details>
+
+<details>
+<summary><b>Does it support Dynamic Type and accessibility scaling?</b></summary>
+Yes. All components comply with Apple HIG (44pt touch target) and Google M3 (48dp touch target) and scale smoothly with system font sizes without clipping.
+</details>
+
+---
+
 ## 📱 Example Application
 
-An interactive gallery app showcasing all components with live iOS/Android platform toggling and Light/Dark themes is located in the [`example/`](https://github.com/abdouldotdev/flutter_adaptive_design/tree/main/example) directory.
-
-To run the example app:
+A complete interactive showcase featuring **all 50+ widgets**, **live platform switcher (iOS ⟷ Android)**, and **Dark/Light mode** is available in the [`example/`](https://github.com/abdouldotdev/flutter_adaptive_design/tree/main/example) folder.
 
 ```bash
-cd example
+git clone https://github.com/abdouldotdev/flutter_adaptive_design.git
+cd flutter_adaptive_design/example
 flutter run
 ```
 
