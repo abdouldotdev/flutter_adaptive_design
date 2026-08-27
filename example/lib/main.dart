@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_design/flutter_adaptive_design.dart';
 
+import 'app_controller.dart';
 import 'screens/overview_screen.dart';
 
 void main() {
@@ -45,41 +46,42 @@ class _AdaptiveGalleryAppState extends State<AdaptiveGalleryApp> {
   Widget build(BuildContext context) {
     final isDark = _themeMode == ThemeMode.dark;
 
+    Widget app;
     if (_currentPlatform == TargetPlatform.iOS) {
-      return CupertinoApp(
+      app = CupertinoApp(
         title: 'Flutter Adaptive Design Gallery',
         debugShowCheckedModeBanner: false,
         theme: CupertinoThemeData(
           brightness: isDark ? Brightness.dark : Brightness.light,
           primaryColor: CupertinoColors.activeBlue,
         ),
-        home: OverviewScreen(
-          onTogglePlatform: _togglePlatform,
-          onToggleTheme: _toggleTheme,
-          isDark: isDark,
+        home: const OverviewScreen(),
+      );
+    } else {
+      app = MaterialApp(
+        title: 'Flutter Adaptive Design Gallery',
+        debugShowCheckedModeBanner: false,
+        themeMode: _themeMode,
+        theme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.light,
+          colorSchemeSeed: Colors.indigo,
         ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.dark,
+          colorSchemeSeed: Colors.indigo,
+        ),
+        home: const OverviewScreen(),
       );
     }
 
-    return MaterialApp(
-      title: 'Flutter Adaptive Design Gallery',
-      debugShowCheckedModeBanner: false,
+    return AdaptiveAppController(
+      platform: _currentPlatform,
       themeMode: _themeMode,
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        colorSchemeSeed: Colors.indigo,
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        colorSchemeSeed: Colors.indigo,
-      ),
-      home: OverviewScreen(
-        onTogglePlatform: _togglePlatform,
-        onToggleTheme: _toggleTheme,
-        isDark: isDark,
-      ),
+      onTogglePlatform: _togglePlatform,
+      onToggleTheme: _toggleTheme,
+      child: app,
     );
   }
 }
